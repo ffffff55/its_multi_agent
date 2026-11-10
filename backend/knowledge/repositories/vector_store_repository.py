@@ -11,6 +11,7 @@ from config.settings import settings
 from langchain_core.documents import Document
 from langchain_openai.embeddings import OpenAIEmbeddings
 from typing import List
+from utils.batches import iter_batches
 
 # 3. from 自己的
 
@@ -61,12 +62,11 @@ class VectorStoreRepository:
         # 场景：documents:[1,2,3,4,5] batch_size:2 遍历3次 第一次取到[1,2]  第二次取到[3,4]    第三次取到[5]
         documents_chunks_added=0
         try:
-            for i in range(0,total_documents_chunks,batch_size):
-                bath=documents[i:batch_size+i]
+            for bath in iter_batches(documents, batch_size):
                 self.vector_database.add_documents(bath)
                 documents_chunks_added=documents_chunks_added+len(bath)
                 logger.info(f"成功将文档块:{documents_chunks_added}/{total_documents_chunks}保存到向量数据库...")
-                return documents_chunks_added
+            return documents_chunks_added
         except Exception as e:
             logger.error(f"文档块列表:{documents}保存到向量数据库失败: {str(e)}")
             raise e

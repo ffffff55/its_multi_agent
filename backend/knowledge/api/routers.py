@@ -12,6 +12,7 @@ from schemas.schema import UploadResponse, QueryResponse, QueryRequest
 from services.retrieval_service import RetrievalService
 from services.query_service import QueryService
 from config.settings import settings
+from repositories.file_repository import resolve_upload_path
 
 import tempfile
 
@@ -27,14 +28,17 @@ query_service = QueryService()
 @router.post("/upload", response_model=UploadResponse, summary="处理知识库上传")
 async def upload_file(file: UploadFile = File(...)):
     # "0430-联想手机K900常见问题汇总.md"
+    temp_file_path = None
 
     try:
-        # 0.临时目录
+        # 0.临时目录。文件名只允许落在这个目录里，拒绝 ../ 和绝对路径。
         temp_md_dir = settings.TMP_MD_FOLDER_PATH
-        file_suffix = os.path.splitext(file.filename)[1]
-        tmp_md_path = os.path.join(temp_md_dir, file.filename)
-        if not os.path.exists(tmp_md_path):
-            os.makedirs(temp_md_dir, exist_ok=True)
+        try:
+            tmp_md_path = resolve_upload_path(temp_md_dir, file.filename)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        os.makedirs(temp_md_dir, exist_ok=True)
+        file_suffix = os.path.splitext(tmp_md_path)[1]
 
         # 1. 处理临时文件
         async with aiofiles.tempfile.NamedTemporaryFile(delete=False, suffix=file_suffix) as temp_file:
@@ -48,25 +52,28 @@ async def upload_file(file: UploadFile = File(...)):
             temp_file_path = temp_file.name
 
         shutil.move(temp_file_path, tmp_md_path)
+        temp_file_path = None
 
         # 2. 磁盘写入完成,入库操作  # TODO(去重)
         chunks_added = await run_in_threadpool(ingestion_processor.ingest_file, tmp_md_path)
-        print(f"临时文件路径:{temp_file_path}")
+        logger.info("文档已写入临时目录: %s", tmp_md_path)
 
         # 3.构建文件上传的响应对象
         return UploadResponse(
             status="success",
             message="文档上传知识库成功",
-            file_name=file.filename,
+            file_name=os.path.basename(tmp_md_path),
             chunks_added=chunks_added
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
-        print(e)
+        logger.exception("文件上传到知识库失败")
         raise HTTPException(status_code=500, detail=f"文件上传到知识库失败:{str(e)}")
 
     finally:
-        # 4. 清空临时文件路径(磁盘空间不足)
+        # 4. 清空还没挪走的临时文件。赋值前就失败时，temp_file_path 仍是 None。
         if temp_file_path and os.path.exists(temp_file_path):
             os.remove(temp_file_path)
             logger.info(f"临时文件:{temp_file_path}已删除...")

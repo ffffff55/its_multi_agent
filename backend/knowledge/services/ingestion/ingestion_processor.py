@@ -1,11 +1,10 @@
 import os.path
-from wsgiref.validate import validator
-
 from repositories.vector_store_repository import VectorStoreRepository
 from langchain_community.document_loaders import TextLoader, PyPDFLoader
 from langchain_text_splitters import  RecursiveCharacterTextSplitter
 from langchain_community.vectorstores.utils import filter_complex_metadata
 from  utils.markdown_utils import MarkDownUtils
+from services.ingestion.chunking import MD_SEPARATORS, chunk_documents
 import  logging
 logging.basicConfig(level=logging.INFO)
 logger=logging.getLogger(__name__)
@@ -21,14 +20,7 @@ class IngestionProcessor:
         self.document_spliter=RecursiveCharacterTextSplitter(
             chunk_size=1500,  # 长文档内容分块的阈值（略大一些。永远考虑语义优先）
             chunk_overlap=200,# 给一定重合度
-            separators=[
-                "\n## ",
-                "\n**"
-                "\n\n",
-                "\n",
-                " ",
-                ""
-            ]
+            separators=MD_SEPARATORS,
         )
 
     def ingest_file(self, md_path: str) -> int:
@@ -75,25 +67,11 @@ class IngestionProcessor:
         # a.如果文档内容不大，直接将这内容作为一个chunk(不用切分)
         # b.如果内容比较大，分析大内容的数据结构，然后为他定制切分策略。采用header rejection:标题注入（保留没一块的业务背景、上下文）
 
-        final_document_chunks=[]
-        for doc in documents:
-            if len(doc.page_content)<3000:  # 评估一下小文件的内容长度（获取一个平均值）
-                # a.不用切分
-                final_document_chunks.append(doc)
-            else:
-                documents_chunks_list = self.document_spliter.split_documents(documents)
-                # b:没每个文档块的page_content注入标题（作为块的背景）
-                # page_content:来源:联想手机K900常见问题汇总 问题1：如何插拔SIM卡 K900采用Micro-Sim卡
-                for  document_chunk in documents_chunks_list:
-
-                    # 1.获取每一个文档块的标题
-                    md_path=document_chunk.metadata['source']
-
-                    title=os.path.basename(md_path)
-
-                    # 2.拼接到每一个文档块的page_content上
-                    document_chunk.page_content=f"文档来源:{title}\n{document_chunk.page_content}"
-                final_document_chunks.extend(documents_chunks_list)
+        # 短文档整篇保留。长文档只切当前这一篇，标题仍按「文档来源:文件名」接在块前面。
+        final_document_chunks = chunk_documents(
+            documents,
+            self.document_spliter.split_documents,
+        )
 
 
         #  3.切分后文档块的元数据校验(过滤不被向量数据库支持的元数据清除掉)

@@ -113,7 +113,7 @@ async def test_bailian_search():
     测试百炼搜索 (使用全局 search_mcp)
     """
     await run_mcp_call(
-        mcp_instance=search_mac_client,
+        mcp_instance=search_mcp_client,
         tool_name="bailian_web_search",  # 准备测试联网搜索工具
         tool_args={"query": "小米公司今天的股价如何?"}  # query
     )
@@ -124,7 +124,7 @@ async def test_baidu_map():
     测试百度地图 (使用全局 baidu_mcp)
     """
     # await run_mcp_call(
-    #     mcp_instance=baidu_map_mcp,
+    #     mcp_instance=baidu_mcp_client,
     #     tool_name="map_geocode",  # (地理位置编码)
     #     tool_args={
     #         "address": "北京市昌平区",
@@ -132,7 +132,7 @@ async def test_baidu_map():
     # )
 
     # await run_mcp_call(
-    #     mcp_instance=baidu_map_mcp,
+    #     mcp_instance=baidu_mcp_client,
     #     tool_name="map_ip_location",  # (根据ip获取经纬度)
     #     tool_args={
     #         "ip": "123.120.109.232",
@@ -140,7 +140,7 @@ async def test_baidu_map():
     # )
 
     await run_mcp_call(
-        mcp_instance=baidu_map_mcp,
+        mcp_instance=baidu_mcp_client,
         tool_name="map_uri",  # (拉起百度地图页面)
         tool_args={
             "service": "direction"

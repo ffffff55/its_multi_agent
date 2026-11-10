@@ -21,8 +21,8 @@
 ## 准备
 
 - Python 3 和 Node.js
-- 至少一套大模型账号。主进程启动时会检查：硅基流动（`SF_API_KEY` + `SF_BASE_URL`）或阿里百炼（`AL_BAILIAN_API_KEY` + `AL_BAILIAN_BASE_URL`）必须有一套，否则主服务直接退出。
-- 当前主调度用的是子模型，客户端指向阿里百炼。要真正对话，请配好 `AL_BAILIAN_API_KEY`、`AL_BAILIAN_BASE_URL` 和 `SUB_MODEL_NAME`。
+- 至少一套大模型账号。硅基流动（`SF_API_KEY` + `SF_BASE_URL`）或阿里百炼（`AL_BAILIAN_API_KEY` + `AL_BAILIAN_BASE_URL`）必须有一套，否则主服务在启动校验时退出。只配其中一套时，进程可以起来。
+- 当前主调度用的是子模型，客户端指向阿里百炼。只配了硅基流动时，对话请求会失败。要真正对话，请配好 `AL_BAILIAN_API_KEY`、`AL_BAILIAN_BASE_URL` 和 `SUB_MODEL_NAME`。
 - 查附近服务站需要 MySQL。只问故障和操作说明时可以先不装。
 - 联网搜索需要通义千问 DashScope；地图和路径需要百度地图 AK。这两项缺失时进程仍会启动，对应工具会失败。
 

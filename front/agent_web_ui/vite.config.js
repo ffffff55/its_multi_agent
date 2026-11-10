@@ -1,20 +1,18 @@
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { resolveProxyTarget } from './src/apiBase.js'
 
-// https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  loadEnv(mode, process.cwd(), '')
-  const target = resolveProxyTarget(process.env.API_PROXY_TARGET)
-  const apiProxy = () => ({
+  const env = loadEnv(mode, process.cwd(), '')
+  const proxyTarget = env.VITE_DEV_PROXY_TARGET || 'http://127.0.0.1:8000'
+  const proxy = {
     '/api': {
-      target,
+      target: proxyTarget,
       changeOrigin: true,
     },
-  })
+  }
   return {
     plugins: [vue()],
-    server: { proxy: apiProxy() },
-    preview: { proxy: apiProxy() },
+    server: { proxy },
+    preview: { proxy },
   }
 })

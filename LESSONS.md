@@ -23,3 +23,7 @@
 - 在 `backend/app` 或 `backend/knowledge` 里执行 `python api/main.py` 时，解释器把 `sys.path[0]` 设成 `api/` 目录，`import api` 会失败。入口脚本要把服务根目录放回 `sys.path`。用 `python -c "import api.main"` 看不出来。
 - `runpy.run_path('api/main.py')` 不会把脚本目录放进 `sys.path`，而 `python -c` 仍把当前目录留在搜索路径里。这样写的入口测试，删掉入口里的路径修复也会通过。要锁住 `python api/main.py`，得先把 `api/` 放到 `sys.path[0]`，并拿掉 `''` 和服务根目录。
 - 知识库 `Settings.KNOWLEDGE_BASE_URL` 标成 `str`，类体里的默认值是 `os.environ.get`，没配又没有 `.env` 时就是 `None`，导入阶段直接校验失败。`.env.example` 里这一行是空字符串，空字符串可以启动上传和问答。入口测试要自己写上这个变量，不能靠本机 `.env` 把失败藏起来。
+
+## 2026-11-10 补 Windows 虚拟环境命令时
+
+- README 里只写 `source .venv/bin/activate` 时，Windows 命令提示符要用 `.venv\Scripts\activate`，PowerShell 要用 `.venv\Scripts\Activate.ps1`。不要只留 Unix 那一条。

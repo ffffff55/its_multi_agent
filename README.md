@@ -33,7 +33,29 @@
 ```bash
 cd backend/knowledge
 python -m venv .venv
+```
+
+激活虚拟环境。macOS 和 Linux：
+
+```bash
 source .venv/bin/activate
+```
+
+Windows 命令提示符：
+
+```bat
+.venv\Scripts\activate
+```
+
+Windows PowerShell：
+
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+如果 PowerShell 提示无法运行脚本，用上面的命令提示符命令。激活后再安装依赖并复制配置：
+
+```bash
 pip install -r requirements.txt
 cp .env.example .env
 ```
@@ -71,7 +93,11 @@ curl -X POST http://127.0.0.1:8001/query \
 ```bash
 cd backend/app
 python -m venv .venv
-source .venv/bin/activate
+```
+
+激活方式和知识库一样。macOS 和 Linux 用 `source .venv/bin/activate`，Windows 命令提示符用 `.venv\Scripts\activate`，PowerShell 用 `.venv\Scripts\Activate.ps1`。然后：
+
+```bash
 pip install -r requirements.txt
 cp .env.example .env
 ```

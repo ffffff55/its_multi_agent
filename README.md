@@ -144,7 +144,7 @@ curl -X POST http://127.0.0.1:8000/api/user_sessions \
 
 对话页先启动主服务。默认请求同源的 `/api`，由 Vite 代理到 `http://127.0.0.1:8000`。换端口或换机器时，在 `front/agent_web_ui` 复制 `.env.example` 为 `.env.local`（不要提交）：
 
-- 只改本机后端端口：`VITE_DEV_PROXY_TARGET=http://127.0.0.1:9000`
+- 只改开发代理指向的主服务：`API_PROXY_TARGET=http://127.0.0.1:9000`。这个变量不要加 `VITE_` 前缀，否则会写进页面。
 - 浏览器直连另一台机器：`VITE_API_BASE_URL=http://那台机器:8000`
 
 ```bash

@@ -9,3 +9,9 @@
 - 知识库前端目录名是 `front/knowlege_platform_ui`（少一个 d）。这是历史拼写，改名会牵动路径和文档，不要顺便「修正」。
 - 主调度智能体当前使用 `sub_model`，不是注释里的 `main_model`。改模型前要先确认这是有意选择。
 - 知识库侧已记下的待优化项（来自 `backend/knowledge/说明.txt`）：多路召回、排序模型、Markdown 中的图片（多模态）、去重、按动态阈值返回 Top N。做检索相关改动时优先考虑这些，不要另起一套互相冲突的方案。
+
+## 2026-11-10 补 README 时
+
+- `backend/app/seed_repair_shops.py` 曾经把数据库连接写死，库名也和 `.env.example` 的 `MYSQL_DATABASE`（`its_db`）不一致。样例数据脚本要读 `MYSQL_*`，不要再写死连接信息，文档里也不要出现那组连接值。
+- 主服务 `requirements.txt` 当时没有 `pydantic` / `pydantic-settings`，只按文件安装无法加载 `config.settings`。知识库启动会导入上传路由和文档切分，原先缺 `aiofiles` 和 `langchain-text-splitters`。
+- 主调度当前用 `sub_model`，客户端指向阿里百炼。只配硅基流动时进程能通过启动校验，对话请求仍会走到百炼那一侧。README 要把这件事写清楚。

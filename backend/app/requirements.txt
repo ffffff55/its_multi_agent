@@ -1,6 +1,8 @@
 fastapi
 uvicorn
 python-dotenv
+pydantic
+pydantic-settings
 pymysql
 DBUtils
 openai

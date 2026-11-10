@@ -31,3 +31,7 @@
 ## 2026-11-10 对话页不要写死 127.0.0.1
 
 - `front/agent_web_ui` 的接口地址不要写死成 `http://127.0.0.1:8000`。留空 `VITE_API_BASE_URL` 时走 Vite 的 `/api` 代理，目标由 `VITE_DEV_PROXY_TARGET` 决定，默认仍是本机 8000。浏览器要直连别的机器时才填 `VITE_API_BASE_URL`。
+
+## 2026-11-10 开发代理地址不要用 VITE_ 前缀
+
+- Vite 会把以 `VITE_` 开头的变量写进浏览器能读到的 `import.meta.env`。对话页代理目标如果叫 `VITE_DEV_PROXY_TARGET`，`npm run dev` 打开页面就能看到这个地址。只给 `vite.config.js` 用的目标应叫 `API_PROXY_TARGET`，用 `loadEnv` 读取，不要加 `VITE_` 前缀。浏览器直连才用 `VITE_API_BASE_URL`。

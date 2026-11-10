@@ -15,3 +15,11 @@
 - `backend/app/seed_repair_shops.py` 曾经把数据库连接写死，库名也和 `.env.example` 的 `MYSQL_DATABASE`（`its_db`）不一致。样例数据脚本要读 `MYSQL_*`，不要再写死连接信息，文档里也不要出现那组连接值。
 - 主服务 `requirements.txt` 当时没有 `pydantic` / `pydantic-settings`，只按文件安装无法加载 `config.settings`。知识库启动会导入上传路由和文档切分，原先缺 `aiofiles` 和 `langchain-text-splitters`。
 - 主调度当前用 `sub_model`，客户端指向阿里百炼。只配硅基流动时进程能通过启动校验，对话请求仍会走到百炼那一侧。README 要把这件事写清楚。
+
+## 2026-11-10 核对主服务能否按 README 启动
+
+- `backend/app/infrastructure/ai/openai_client.py` 会在导入时同时构造硅基流动和阿里百炼两个客户端。`AsyncOpenAI` 在 `api_key` 为空时直接抛错，主进程还没监听端口就退出。这和 settings 里「至少一套即可」不一致。缺 key 或 base url 的那一侧要用本机占位客户端，不要在导入阶段去连真实地址。
+- 只执行 `Settings()` 不能证明 `python api/main.py` 能起来。导入链会经过 `openai_client`。
+- 在 `backend/app` 或 `backend/knowledge` 里执行 `python api/main.py` 时，解释器把 `sys.path[0]` 设成 `api/` 目录，`import api` 会失败。入口脚本要把服务根目录放回 `sys.path`。用 `python -c "import api.main"` 看不出来。
+- `runpy.run_path('api/main.py')` 不会把脚本目录放进 `sys.path`，而 `python -c` 仍把当前目录留在搜索路径里。这样写的入口测试，删掉入口里的路径修复也会通过。要锁住 `python api/main.py`，得先把 `api/` 放到 `sys.path[0]`，并拿掉 `''` 和服务根目录。
+- 知识库 `Settings.KNOWLEDGE_BASE_URL` 标成 `str`，类体里的默认值是 `os.environ.get`，没配又没有 `.env` 时就是 `None`，导入阶段直接校验失败。`.env.example` 里这一行是空字符串，空字符串可以启动上传和问答。入口测试要自己写上这个变量，不能靠本机 `.env` 把失败藏起来。

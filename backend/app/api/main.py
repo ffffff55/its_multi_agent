@@ -1,3 +1,11 @@
+import sys
+from pathlib import Path
+
+# python api/main.py 时，sys.path[0] 是 api/ 目录，包名 api 会找不到。
+_APP_ROOT = Path(__file__).resolve().parent.parent
+if str(_APP_ROOT) not in sys.path:
+    sys.path.insert(0, str(_APP_ROOT))
+
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware

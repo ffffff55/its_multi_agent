@@ -1,5 +1,4 @@
 import logging
-import jieba
 import re
 
 logging.basicConfig(level=logging.INFO)
@@ -12,6 +11,11 @@ from services.ingestion.ingestion_processor import IngestionProcessor
 from utils.markdown_utils import MarkDownUtils
 from config.settings import settings
 from sklearn.metrics.pairwise import cosine_similarity
+from services.title_ranking import rough_rank_metadata
+
+# 长文档块已经算过相似度。写入和 _reranking 的判断必须用下面这两个常量。
+CHUNK_INDEX_KEY = "chunk_index"
+SIMILARITY_KEY = "similarity"
 
 
 class RetrievalService:
@@ -36,39 +40,8 @@ class RetrievalService:
             List[Dict[str,Any]]:所有md的元数据 （标题【title】，路径【path】，标题粗排得分【rough_score】）
         """
 
-        # 1. 用户输入问题是否存在
-        if not user_query:
-            return []
-        ROUGHIN_WORD_WEIGHT = 0.7
-
-        # 2.遍历mds_metadata(所有md的元数据)
-        for md_metadata in mds_metadata:
-            # 2.1 获取md标题
-            md_metadata_title = md_metadata['title']
-
-            # 2.2 判断标题是否存在
-            if not md_metadata_title and not md_metadata_title.strip():
-                continue
-            # 2.3 进行分词&&算得分
-            # 2.3.1 优先用字符切:set:交、并、差:jarcard算法=A N B/A U B
-            user_query_char = set(user_query)
-            md_metadata_title_char = set(md_metadata_title)
-            unique_char = user_query_char | md_metadata_title_char
-            char_score = len(user_query_char & md_metadata_title_char) / len(unique_char) if len(unique_char) > 0 else 0
-
-            # 2.3.2 在用jieba词项切(影响因素大一些)
-            user_query_word = set(jieba.lcut(user_query))
-            md_metadata_title_word = set(jieba.lcut(md_metadata_title))
-            unique_word = user_query_word | md_metadata_title_word
-            word_score = len(user_query_word & md_metadata_title_word) / len(unique_word) if len(unique_word) > 0 else 0
-
-            # 2.3.3 计算粗排分数：字符级+词性项级(侧重)
-            roughing_score = word_score * ROUGHIN_WORD_WEIGHT + char_score * (1 - ROUGHIN_WORD_WEIGHT)
-
-            md_metadata['roughing_score'] = float(roughing_score)
-
-        # 3.根据标题的元数据（roughing_score）排序并且留下前50个
-        return sorted(mds_metadata, key=lambda x: x['roughing_score'], reverse=True)[:50]
+        # 空标题不再参加排序。以前 continue 之后原列表里没有 roughing_score，sorted 会 KeyError，整次问答 500。
+        return rough_rank_metadata(user_query, mds_metadata)
 
     def fine_ranking(self, user_query: str, rough_mds_metadata: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
@@ -221,7 +194,7 @@ class RetrievalService:
             except Exception as e:
 
                 logger.error(f"打开文件失败:{e}")
-                return []
+                continue
         # 4. 返回指定文档列表
 
         return based_title_candidates
@@ -248,7 +221,7 @@ class RetrievalService:
         for document in total_candidates:
             # 去重（）
             clean_content = re.sub(r'^文档来源:.*?(?=(\n|#))', '', document.page_content, flags=re.DOTALL).strip()#【加上】
-            key = (document.metadata['title'], clean_content[:100])
+            key = (document.metadata.get("title") or "", clean_content[:100])
             if key not in seen:
                 seen.add(key)
                 unique_candidates.append(document)
@@ -283,7 +256,7 @@ class RetrievalService:
         for candidate_index, unique_candidate in enumerate(unique_candidates):
             # 如何去判断 第二路长文档 or  第一路的文档和第二路?
             # 2.1 第二路的长文档
-            if "chunk_index" in unique_candidate.metadata and "similarity" in unique_candidate.metadata:
+            if CHUNK_INDEX_KEY in unique_candidate.metadata and SIMILARITY_KEY in unique_candidate.metadata:
                 score_doc.append((unique_candidate, unique_candidate.metadata['similarity']))
             # 2.2 第一路和第二路的短文档
             else:
@@ -357,8 +330,8 @@ class RetrievalService:
                 metadata={
                     "path": fine_md_metadata['path'],
                     "title": fine_md_metadata['title'],
-                    "chunk_index:": int(chunk_idx),
-                    "similarity": float(doc_chunks_similarity[chunk_idx])
+                    CHUNK_INDEX_KEY: int(chunk_idx),
+                    SIMILARITY_KEY: float(doc_chunks_similarity[chunk_idx])
                 }
             )
             docs.append(doc)

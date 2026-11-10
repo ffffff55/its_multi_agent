@@ -2,14 +2,16 @@ from pydantic_settings import BaseSettings,SettingsConfigDict
 import os
 
 class Settings(BaseSettings):
-    API_KEY: str = os.environ.get("API_KEY")
-    BASE_URL: str = os.environ.get("BASE_URL")
-    MODEL: str = os.environ.get("MODEL")
-    EMBEDDING_MODEL: str = os.environ.get("EMBEDDING_MODEL")
+    # 缺省用空字符串。类体里写 os.environ.get 时，没配变量就是 None，导入阶段会校验失败。
+    # 环境变量和 .env 仍会覆盖这些空字符串。
+    API_KEY: str = ""
+    BASE_URL: str = ""
+    MODEL: str = ""
+    EMBEDDING_MODEL: str = ""
 
     
     # knowledge/config
-    KNOWLEDGE_BASE_URL:str=os.environ.get("KNOWLEDGE_BASE_URL")
+    KNOWLEDGE_BASE_URL: str = ""
 
     _current_dir = os.path.dirname(os.path.abspath(__file__))
     # knowledge

@@ -19,8 +19,8 @@ class KnowledgeEntrypointTest(unittest.TestCase):
             "KNOWLEDGE_BASE_URL",
         ):
             env.pop(key, None)
-        # 配置类把 KNOWLEDGE_BASE_URL 标成 str，缺省是 None，没有 .env 时导入会失败。
-        # .env.example 里这一行是空字符串，空字符串可以启动。
+        # 显式写入测试用配置，避免本机 .env 混进启动测试。
+        # 五个键都不配时的空字符串缺省，由 test_settings_defaults.py 锁住。
         env.update(
             {
                 "API_KEY": "kb-test",

@@ -1,6 +1,31 @@
 import os
+import re
 import hashlib
+from pathlib import Path
 from typing import List, Dict, Any
+
+def resolve_upload_path(temp_dir: str, filename: str | None) -> str:
+    """只接受落在 temp_dir 里的文件名。绝对路径和 .. 直接拒绝。"""
+    if filename is None:
+        raise ValueError("文件名不能为空")
+    raw = str(filename).strip()
+    if not raw or "\x00" in raw:
+        raise ValueError("文件名不合法")
+    normalized = raw.replace("\\", "/")
+    if normalized.startswith("/"):
+        raise ValueError("文件名不合法")
+    segments = normalized.split("/")
+    if any(segment in {"", ".", ".."} for segment in segments):
+        raise ValueError("文件名不合法")
+    cleaned = re.sub(r'[\\/:*?"<>|]', "-", segments[-1]).strip()
+    if cleaned in {"", ".", ".."}:
+        raise ValueError("文件名不合法")
+    root = Path(temp_dir).resolve()
+    destination = (root / cleaned).resolve()
+    if destination.parent != root:
+        raise ValueError("文件名不合法")
+    return str(destination)
+
 
 class FileRepository:
     @staticmethod

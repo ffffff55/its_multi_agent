@@ -53,3 +53,11 @@
 - `backend/app/infrastructure/tools/mcp/mcp_servers.py` 里手工试调用曾经写了 `search_mac_client` 和 `baidu_map_mcp`，文件里实际的变量不是这两个名字，直接运行会 `NameError`。试调用要引用同一个文件里创建的客户端。
 - 生产环境的 CORS 仍是 `allow_origins=["*"]` 且 `allow_credentials=True`。这次不是在收紧跨域，所以没有改。不要顺手改掉。
 - 已合并的对话页接口配置，不要再开一个内容相同的 PR 叠上去。空 diff 的 PR 应关掉，而不是继续往上提交第二套实现。
+
+## 2026-11-10 空 diff 的 PR 不要合并
+
+- PR #8 相对 main 没有文件差异。对话页可配置接口已经在 PR #7，开发代理变量名以 PR #9 的 `API_PROXY_TARGET` 为准。空 diff 关掉即可，不要合并。
+- main 上的 `4ad74d9`（标题 `probe`）是 PR #8 的空合并。树和前一个 main `1ff2ee4` 一样，都是 `790532cf`，没有改文件。不要 revert，也不要 force-push 改这个提交。
+- 判断能不能合，要看 `git diff origin/main...分支` 和 `git merge-tree` 的结果树是不是和 main 相同。GitHub 显示 MERGEABLE 只说明没有冲突。
+- 这个环境里的 GitHub token 能合并 PR，但不能在 issue 或 PR 上发评论（评论和 review 接口返回 403）。不要调用合并接口去试探有没有评论权限。
+- issue #1、#4、#5 已经做完并关闭：README 在 PR #2，Windows 激活命令在 PR #6，对话页接口在 PR #7 和 PR #9。当时没有新的开放 issue。评论接口没有权限，所以这些 issue 下仍然没有回复。

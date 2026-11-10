@@ -142,11 +142,15 @@ curl -X POST http://127.0.0.1:8000/api/user_sessions \
 
 ## 3. 前端
 
-对话页请求已经写死到 `http://127.0.0.1:8000`，先启动主服务。
+对话页先启动主服务。默认请求同源的 `/api`，由 Vite 代理到 `http://127.0.0.1:8000`。换端口或换机器时，在 `front/agent_web_ui` 复制 `.env.example` 为 `.env.local`（不要提交）：
+
+- 只改本机后端端口：`VITE_DEV_PROXY_TARGET=http://127.0.0.1:9000`
+- 浏览器直连另一台机器：`VITE_API_BASE_URL=http://那台机器:8000`
 
 ```bash
 cd front/agent_web_ui
 npm install
+npm test
 npm run dev
 ```
 

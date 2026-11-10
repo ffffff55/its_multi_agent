@@ -27,3 +27,7 @@
 ## 2026-11-10 补 Windows 虚拟环境命令时
 
 - README 里只写 `source .venv/bin/activate` 时，Windows 命令提示符要用 `.venv\Scripts\activate`，PowerShell 要用 `.venv\Scripts\Activate.ps1`。不要只留 Unix 那一条。
+
+## 2026-11-10 对话页不要写死 127.0.0.1
+
+- `front/agent_web_ui` 的接口地址不要写死成 `http://127.0.0.1:8000`。留空 `VITE_API_BASE_URL` 时走 Vite 的 `/api` 代理，目标由 `VITE_DEV_PROXY_TARGET` 决定，默认仍是本机 8000。浏览器要直连别的机器时才填 `VITE_API_BASE_URL`。

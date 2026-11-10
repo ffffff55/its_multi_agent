@@ -244,6 +244,7 @@
 <script>
 import { ref, computed, onMounted, watch, nextTick, onUnmounted } from 'vue';
 import { marked } from 'marked';
+import { apiUrl } from './apiBase.js';
 
 // Configure marked options
 marked.setOptions({
@@ -431,7 +432,7 @@ const handleServiceStation = () => {
       
       isLoadingSessions.value = true;
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/user_sessions', {
+        const response = await fetch(apiUrl('/api/user_sessions'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -620,7 +621,7 @@ const handleServiceStation = () => {
         
         try {
           // 调用后端API
-          const response = await fetch('http://127.0.0.1:8000/api/query', {
+          const response = await fetch(apiUrl('/api/query'), {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'

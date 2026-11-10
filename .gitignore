@@ -1,0 +1,51 @@
+# secrets and credentials
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa
+id_rsa.pub
+credentials.json
+serviceAccount*.json
+secrets.json
+
+# python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# frontend
+node_modules/
+dist/
+.vite/
+.vscode/
+
+# local runtime data
+logs/
+*.log
+backend/app/user_memories/
+backend/knowledge/chroma_kb1/
+backend/knowledge/chroma_kb1_backup_3072dim/
+backend/knowledge/data/tmp/
+backend/knowledge/data/crawl/
+
+# os / ide
+.DS_Store
+Thumbs.db
+.idea/
+
+# local databases / session stores
+*.db
+*.sqlite3

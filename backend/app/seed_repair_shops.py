@@ -1,9 +1,14 @@
-"""修复：创建 repair_shops 表并插入样例数据（项目缺失的初始化步骤）。
-坐标使用 BD09LL 近似值，仅供演示，请替换为真实数据。
-"""
-import pymysql
+"""创建 repair_shops 表并插入样例数据。
 
-CONN = dict(host="localhost", port=3306, user="root", password="123456", database="its", charset="utf8mb4")
+坐标是 BD09LL 近似值，只供演示。数据库连接从环境变量或 backend/app/.env 读取，
+与主服务使用同一套 MYSQL_* 配置。
+"""
+import os
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).resolve().parent / ".env")
 
 TABLE_SQL = """
 CREATE TABLE IF NOT EXISTS repair_shops (
@@ -65,8 +70,23 @@ INSERT INTO repair_shops (
 ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
 """
 
+
+def mysql_conn_kwargs() -> dict:
+    """与主服务 settings 相同的 MYSQL_* 环境变量。"""
+    return {
+        "host": os.environ.get("MYSQL_HOST", "localhost"),
+        "port": int(os.environ.get("MYSQL_PORT", "3306")),
+        "user": os.environ.get("MYSQL_USER", "root"),
+        "password": os.environ.get("MYSQL_PASSWORD", ""),
+        "database": os.environ.get("MYSQL_DATABASE", "its_db"),
+        "charset": "utf8mb4",
+    }
+
+
 def main():
-    conn = pymysql.connect(**CONN)
+    import pymysql
+
+    conn = pymysql.connect(**mysql_conn_kwargs())
     try:
         with conn.cursor() as cur:
             cur.execute(TABLE_SQL)
@@ -82,6 +102,7 @@ def main():
                 print(f"表已有 {cnt} 条数据，跳过插入")
     finally:
         conn.close()
+
 
 if __name__ == "__main__":
     main()

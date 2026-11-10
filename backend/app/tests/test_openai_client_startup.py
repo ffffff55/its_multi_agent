@@ -53,8 +53,18 @@ class OpenAIClientStartupTest(unittest.TestCase):
                 "AL_BAILIAN_BASE_URL": "https://example.invalid/v1",
             },
             (
+                # python -c 会把 cwd 放在 sys.path[0]，runpy 执行 .py 文件时也不会改成脚本目录。
+                # 这里改成和 `python api/main.py` 一样：只把 api/ 放在最前，服务根目录不在搜索路径里。
+                "import sys\n"
+                "from pathlib import Path\n"
+                "script = Path('api/main.py').resolve()\n"
+                "service_root = script.parent.parent\n"
+                "sys.path = [str(script.parent)] + [\n"
+                "    item for item in sys.path\n"
+                "    if item not in ('', str(service_root), str(script.parent))\n"
+                "]\n"
                 "import runpy\n"
-                "runpy.run_path('api/main.py', run_name='not_main')\n"
+                "runpy.run_path(str(script), run_name='not_main')\n"
                 "print('SCRIPT_IMPORT_OK')\n"
             ),
         )

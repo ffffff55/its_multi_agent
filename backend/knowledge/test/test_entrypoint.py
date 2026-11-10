@@ -11,12 +11,23 @@ KNOWLEDGE_DIR = Path(__file__).resolve().parents[1]
 class KnowledgeEntrypointTest(unittest.TestCase):
     def test_script_entrypoint_can_import(self):
         env = os.environ.copy()
+        for key in (
+            "API_KEY",
+            "BASE_URL",
+            "MODEL",
+            "EMBEDDING_MODEL",
+            "KNOWLEDGE_BASE_URL",
+        ):
+            env.pop(key, None)
+        # 配置类把 KNOWLEDGE_BASE_URL 标成 str，缺省是 None，没有 .env 时导入会失败。
+        # .env.example 里这一行是空字符串，空字符串可以启动。
         env.update(
             {
                 "API_KEY": "kb-test",
                 "BASE_URL": "https://example.invalid/v1",
                 "MODEL": "demo-model",
                 "EMBEDDING_MODEL": "demo-embed",
+                "KNOWLEDGE_BASE_URL": "",
             }
         )
         result = subprocess.run(
@@ -24,8 +35,16 @@ class KnowledgeEntrypointTest(unittest.TestCase):
                 sys.executable,
                 "-c",
                 (
+                    "import sys\n"
+                    "from pathlib import Path\n"
+                    "script = Path('api/main.py').resolve()\n"
+                    "service_root = script.parent.parent\n"
+                    "sys.path = [str(script.parent)] + [\n"
+                    "    item for item in sys.path\n"
+                    "    if item not in ('', str(service_root), str(script.parent))\n"
+                    "]\n"
                     "import runpy\n"
-                    "runpy.run_path('api/main.py', run_name='not_main')\n"
+                    "runpy.run_path(str(script), run_name='not_main')\n"
                     "print('SCRIPT_IMPORT_OK')\n"
                 ),
             ],

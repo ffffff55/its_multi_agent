@@ -27,3 +27,7 @@
 ## 2026-11-10 补 Windows 虚拟环境命令时
 
 - README 里只写 `source .venv/bin/activate` 时，Windows 命令提示符要用 `.venv\Scripts\activate`，PowerShell 要用 `.venv\Scripts\Activate.ps1`。不要只留 Unix 那一条。
+
+## 2026-11-10 对话前端接口地址
+
+- `front/agent_web_ui` 不能把 `http://127.0.0.1:8000` 写进 `fetch`。基地址用 `VITE_API_BASE_URL`，空着走当前站点。开发服务器用 `API_PROXY_TARGET` 把 `/api` 转到主服务，默认 `http://127.0.0.1:8000`。主服务路由本身带 `/api`，代理不要把这段路径裁掉。知识库管理页的代理会裁掉 `/api`，那是因为它的后端路由没有这个前缀，两边不要抄混。

@@ -142,13 +142,21 @@ curl -X POST http://127.0.0.1:8000/api/user_sessions \
 
 ## 3. 前端
 
-对话页请求已经写死到 `http://127.0.0.1:8000`，先启动主服务。
+对话页请求 `/api/query` 和 `/api/user_sessions`。地址不再写死。
+
+- 默认走当前站点。`npm run dev` 和 `npm run preview` 会把 `/api` 代理到 `API_PROXY_TARGET`，没写时是 `http://127.0.0.1:8000`。主服务换了机器或端口，只改这个变量。
+- 浏览器要直接访问另一台机器时，设置 `VITE_API_BASE_URL`，例如 `http://192.168.1.20:8000`。这个值会在启动或构建时写进页面，改完要重新执行 `npm run dev` 或 `npm run build`。
+
+先启动主服务，再在 `front/agent_web_ui` 复制 `.env.example` 为 `.env` 后按需修改。macOS 和 Linux：
 
 ```bash
 cd front/agent_web_ui
 npm install
+cp .env.example .env
 npm run dev
 ```
+
+Windows 命令提示符把复制那一行换成 `copy .env.example .env`。PowerShell 可以用 `Copy-Item .env.example .env`。
 
 知识库管理页把 `/api` 代理到 `http://127.0.0.1:8001`，先启动知识库服务。
 

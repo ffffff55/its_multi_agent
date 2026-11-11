@@ -22,6 +22,16 @@ test('dev proxy target is not a VITE_ variable, so the page cannot see it', () =
   assert.equal(readme.includes('VITE_DEV_PROXY_TARGET'), false)
 })
 
+test('readme sends browsers to the vite localhost url', () => {
+  const readme = readFileSync(new URL('../../README.md', import.meta.url), 'utf8')
+  assert.match(readme, /http:\/\/localhost:5173/)
+  assert.match(readme, /http:\/\/localhost:3000/)
+  assert.equal(readme.includes('127.0.0.1:5173'), false)
+  assert.equal(readme.includes('127.0.0.1:3000'), false)
+  assert.match(readme, /127\.0\.0\.1:8000/)
+  assert.match(readme, /127\.0\.0\.1:8001/)
+})
+
 test('chat page does not hardcode the main API host', () => {
   const source = readFileSync(new URL('./src/App.vue', import.meta.url), 'utf8')
   const clientApi = readFileSync(new URL('./src/apiBase.js', import.meta.url), 'utf8')

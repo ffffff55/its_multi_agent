@@ -67,3 +67,9 @@
 - Issue #12 只说 README 不够清晰，没有指出具体小节。评论接口仍然是 403（GraphQL `addComment` 和 REST `issues/comments` 都是 `Resource not accessible by integration`），没法在 issue 里追问。
 - 这种时候不要整篇重写。在前面加一节「先跑起来」，写清启动顺序，以及只配硅基流动时进程能起来但对话会失败。原来的分步命令、Windows 激活、`API_PROXY_TARGET=` 和目录名 `knowlege` 留在原处。`front/agent_web_ui/proxyTarget.test.mjs` 会读 README，必须还能匹配到 `API_PROXY_TARGET=`。
 - 主服务 `.env.example` 开头如果只写「硅基流动或阿里百炼其中一套」，会和 README 打架。启动校验确实是两套都行，对话用的是阿里百炼上的 `SUB_MODEL_NAME`，两句都要写。
+
+## 2026-11-11 前端页面地址是 localhost
+
+- `npm run dev` 时 Vite 默认 host 是 localhost。在 Node 22 的 Linux 上，对话页和知识库管理页只听 `::1`。`http://127.0.0.1:5173` 和 `http://127.0.0.1:3000` 连接被拒绝，`http://localhost:5173/` 和 `http://localhost:3000/` 返回 200。README 要写终端打印的 localhost。
+- 主服务和知识库服务的 uvicorn 显式绑定 `127.0.0.1` 的 8000 和 8001。这两个地址保持 127.0.0.1，不要改成 localhost。
+- `front/agent_web_ui/proxyTarget.test.mjs` 会读 README，锁住 `localhost:5173`、`localhost:3000`，并拒绝 `127.0.0.1:5173` 和 `127.0.0.1:3000`。

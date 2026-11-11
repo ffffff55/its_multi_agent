@@ -17,16 +17,18 @@
 | --- | --- | --- | --- | --- |
 | 1 | `backend/knowledge` | `python api/main.py` | `127.0.0.1:8001` | `API_KEY`、`BASE_URL`、`MODEL`、`EMBEDDING_MODEL` |
 | 2 | `backend/app` | `python api/main.py` | `127.0.0.1:8000` | `AL_BAILIAN_API_KEY`、`AL_BAILIAN_BASE_URL`、`SUB_MODEL_NAME`，以及 `KNOWLEDGE_BASE_URL=http://127.0.0.1:8001` |
-| 3 | `front/agent_web_ui` | `npm run dev` | Vite 默认 `127.0.0.1:5173` | 不用改。页面请求 `/api`，开发服务器代理到本机 8000 |
+| 3 | `front/agent_web_ui` | `npm run dev` | `http://localhost:5173` | 不用改。页面请求 `/api`，开发服务器代理到本机 8000 |
 
 表里是这一步要能回答问题至少要填的，不是进程能不能起来的全部条件。主服务启动校验只看硅基流动或阿里百炼有没有一套；不填 `KNOWLEDGE_BASE_URL` 也能起来，只是查知识库会失败。当前调度和两个专家用的是阿里百炼上的 `SUB_MODEL_NAME`。只配硅基流动时，主服务能起来，对话请求会失败。
+
+对话页和知识库管理页打开终端打印的 `http://localhost:5173/`、`http://localhost:3000/`。主服务和知识库服务仍是 `127.0.0.1` 的 8000 和 8001。
 
 下面这些可以后补。缺了的时候对应功能不可用，进程仍会启动：
 
 - 附近服务站：先建 MySQL 库 `its_db`，再在 `backend/app` 执行 `python seed_repair_shops.py`
 - 联网搜索：`DASHSCOPE_BASE_URL`、`DASHSCOPE_API_KEY`
 - 地图和路径：`BAIDUMAP_AK`
-- 知识库管理页：`front/knowlege_platform_ui`（目录名少一个 d），`npm run dev`，端口 3000，把 `/api` 代理到 `127.0.0.1:8001`
+- 知识库管理页：`front/knowlege_platform_ui`（目录名少一个 d），`npm run dev`，打开 `http://localhost:3000/`，把 `/api` 代理到 `127.0.0.1:8001`
 
 ## 目录
 
@@ -34,8 +36,8 @@
 | --- | --- | --- |
 | `backend/app` | 主 API（对话、会话） | `http://127.0.0.1:8000` |
 | `backend/knowledge` | 知识库（上传、检索、回答） | `http://127.0.0.1:8001` |
-| `front/agent_web_ui` | 对话前端，包名 `its-vue` | Vite 默认 `http://127.0.0.1:5173` |
-| `front/knowlege_platform_ui` | 知识库管理前端。目录名是 `knowlege`，少一个 d | `http://127.0.0.1:3000` |
+| `front/agent_web_ui` | 对话前端，包名 `its-vue` | `http://localhost:5173` |
+| `front/knowlege_platform_ui` | 知识库管理前端。目录名是 `knowlege`，少一个 d | `http://localhost:3000` |
 
 ## 准备
 

@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  python-syntax:
+    name: Python syntax (${{ matrix.dir }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dir: [backend/app, backend/knowledge]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      # Syntax-only on purpose: importing the services needs API keys and
+      # external services, which must not be required in CI.
+      - name: Compile all Python sources
+        working-directory: ${{ matrix.dir }}
+        run: python -m compileall -q .
+
+  frontend:
+    name: Frontend (${{ matrix.dir }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - dir: front/agent_web_ui
+            test: true
+          - dir: front/knowlege_platform_ui
+            test: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: ${{ matrix.dir }}/package-lock.json
+      - name: Install
+        working-directory: ${{ matrix.dir }}
+        run: npm ci
+      - name: Build
+        working-directory: ${{ matrix.dir }}
+        run: npm run build
+      - name: Test
+        if: ${{ matrix.test }}
+        working-directory: ${{ matrix.dir }}
+        run: npm test
+
+  pr-guards:
+    name: PR guards
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Reject empty diff
+        run: |
+          git fetch --depth=1 origin "${{ github.base_ref }}"
+          changed=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD" | wc -l)
+          echo "changed files: $changed"
+          if [ "$changed" -eq 0 ]; then
+            echo "::error::PR contains no file changes; an empty diff must not be merged"
+            exit 1
+          fi
+      - name: Reject secrets and generated data
+        run: |
+          git fetch --depth=1 origin "${{ github.base_ref }}"
+          if git diff --name-only "origin/${{ github.base_ref }}...HEAD" \
+             | grep -E '(^|/)\.env$|(^|/)node_modules/|user_memories/|chroma_kb1'; then
+            echo "::error::diff touches .env, node_modules, user_memories or the vector store"
+            exit 1
+          fi
+          echo "no forbidden paths"

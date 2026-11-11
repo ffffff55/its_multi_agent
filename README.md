@@ -7,7 +7,26 @@
 
 调度不会改写用户原话，只把原问题转交。
 
-`backend/openai-agents-tutorial` 是课程示例，不是这套服务。要跑产品，按下面的主服务、知识库和两个前端来。
+`backend/openai-agents-tutorial` 是课程示例，不是这套服务。要跑产品，按下面的顺序来。各节有虚拟环境、Windows 命令和 curl，这里只列最少步骤。
+
+## 先跑起来
+
+工作目录必须是表里的目录，再执行启动命令。
+
+| 顺序 | 目录 | 启动 | 本机地址 | 最少要配 |
+| --- | --- | --- | --- | --- |
+| 1 | `backend/knowledge` | `python api/main.py` | `127.0.0.1:8001` | `API_KEY`、`BASE_URL`、`MODEL`、`EMBEDDING_MODEL` |
+| 2 | `backend/app` | `python api/main.py` | `127.0.0.1:8000` | `AL_BAILIAN_API_KEY`、`AL_BAILIAN_BASE_URL`、`SUB_MODEL_NAME`，以及 `KNOWLEDGE_BASE_URL=http://127.0.0.1:8001` |
+| 3 | `front/agent_web_ui` | `npm run dev` | Vite 默认 `127.0.0.1:5173` | 不用改。页面请求 `/api`，开发服务器代理到本机 8000 |
+
+启动校验只要求硅基流动或阿里百炼有一套。当前调度和两个专家用的是阿里百炼上的 `SUB_MODEL_NAME`。只配硅基流动时，主服务能起来，对话请求会失败。
+
+下面这些可以后补。缺了的时候对应功能不可用，进程仍会启动：
+
+- 附近服务站：先建 MySQL 库 `its_db`，再在 `backend/app` 执行 `python seed_repair_shops.py`
+- 联网搜索：`DASHSCOPE_BASE_URL`、`DASHSCOPE_API_KEY`
+- 地图和路径：`BAIDUMAP_AK`
+- 知识库管理页：`front/knowlege_platform_ui`（目录名少一个 d），`npm run dev`，端口 3000，把 `/api` 代理到 `127.0.0.1:8001`
 
 ## 目录
 
@@ -22,7 +41,7 @@
 
 - Python 3 和 Node.js
 - 至少一套大模型账号。硅基流动（`SF_API_KEY` + `SF_BASE_URL`）或阿里百炼（`AL_BAILIAN_API_KEY` + `AL_BAILIAN_BASE_URL`）必须有一套，否则主服务在启动校验时退出。只配其中一套时，进程可以起来。
-- 当前主调度用的是子模型，客户端指向阿里百炼。只配了硅基流动时，对话请求会失败。要真正对话，请配好 `AL_BAILIAN_API_KEY`、`AL_BAILIAN_BASE_URL` 和 `SUB_MODEL_NAME`。
+- 当前主调度和两个专家用的是子模型（环境变量 `SUB_MODEL_NAME`），客户端指向阿里百炼。只配了硅基流动时，对话请求会失败。要真正对话，请配好 `AL_BAILIAN_API_KEY`、`AL_BAILIAN_BASE_URL` 和 `SUB_MODEL_NAME`。
 - 查附近服务站需要 MySQL。只问故障和操作说明时可以先不装。
 - 联网搜索需要通义千问 DashScope；地图和路径需要百度地图 AK。这两项缺失时进程仍会启动，对应工具会失败。
 

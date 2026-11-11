@@ -61,3 +61,9 @@
 - 判断能不能合，要看 `git diff origin/main...分支` 和 `git merge-tree` 的结果树是不是和 main 相同。GitHub 显示 MERGEABLE 只说明没有冲突。
 - 这个环境里的 GitHub token 能合并 PR，但不能在 issue 或 PR 上发评论（评论和 review 接口返回 403）。不要调用合并接口去试探有没有评论权限。
 - issue #1、#4、#5 已经做完并关闭：README 在 PR #2，Windows 激活命令在 PR #6，对话页接口在 PR #7 和 PR #9。当时没有新的开放 issue。评论接口没有权限，所以这些 issue 下仍然没有回复。
+
+## 2026-11-11 README 补「先跑起来」
+
+- Issue #12 只说 README 不够清晰，没有指出具体小节。评论接口仍然是 403（GraphQL `addComment` 和 REST `issues/comments` 都是 `Resource not accessible by integration`），没法在 issue 里追问。
+- 这种时候不要整篇重写。在前面加一节「先跑起来」，写清启动顺序，以及只配硅基流动时进程能起来但对话会失败。原来的分步命令、Windows 激活、`API_PROXY_TARGET=` 和目录名 `knowlege` 留在原处。`front/agent_web_ui/proxyTarget.test.mjs` 会读 README，必须还能匹配到 `API_PROXY_TARGET=`。
+- 主服务 `.env.example` 开头如果只写「硅基流动或阿里百炼其中一套」，会和 README 打架。启动校验确实是两套都行，对话用的是阿里百炼上的 `SUB_MODEL_NAME`，两句都要写。

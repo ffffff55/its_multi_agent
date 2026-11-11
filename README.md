@@ -13,13 +13,13 @@
 
 工作目录必须是表里的目录，再执行启动命令。
 
-| 顺序 | 目录 | 启动 | 本机地址 | 最少要配 |
+| 顺序 | 目录 | 启动 | 本机地址 | 这一步要能用起来 |
 | --- | --- | --- | --- | --- |
 | 1 | `backend/knowledge` | `python api/main.py` | `127.0.0.1:8001` | `API_KEY`、`BASE_URL`、`MODEL`、`EMBEDDING_MODEL` |
 | 2 | `backend/app` | `python api/main.py` | `127.0.0.1:8000` | `AL_BAILIAN_API_KEY`、`AL_BAILIAN_BASE_URL`、`SUB_MODEL_NAME`，以及 `KNOWLEDGE_BASE_URL=http://127.0.0.1:8001` |
 | 3 | `front/agent_web_ui` | `npm run dev` | Vite 默认 `127.0.0.1:5173` | 不用改。页面请求 `/api`，开发服务器代理到本机 8000 |
 
-启动校验只要求硅基流动或阿里百炼有一套。当前调度和两个专家用的是阿里百炼上的 `SUB_MODEL_NAME`。只配硅基流动时，主服务能起来，对话请求会失败。
+表里是这一步要能回答问题至少要填的，不是进程能不能起来的全部条件。主服务启动校验只看硅基流动或阿里百炼有没有一套；不填 `KNOWLEDGE_BASE_URL` 也能起来，只是查知识库会失败。当前调度和两个专家用的是阿里百炼上的 `SUB_MODEL_NAME`。只配硅基流动时，主服务能起来，对话请求会失败。
 
 下面这些可以后补。缺了的时候对应功能不可用，进程仍会启动：
 

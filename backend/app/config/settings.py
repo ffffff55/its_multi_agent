@@ -14,6 +14,12 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import model_validator
 from typing_extensions import Self
 
+from config.startup_check import (
+    missing_configuration_problems,
+    startup_configuration_error_message,
+)
+
+
 
 class Settings(BaseSettings):
     """
@@ -92,21 +98,19 @@ class Settings(BaseSettings):
         validate_default=True,               # 验证默认值
     )
 
-    # ====================  ====================
+    # ==================== 启动前配置检查 ====================
     @model_validator(mode='after')
     def check_ai_service_configuration(self) -> Self:
         """
-        验证器：在配置加载完成后自动执行。
-        如果需要强制至少配置一个 AI 服务，可以在这里抛出 ValueError
-        """
-        # 注意：这里 self 已经是实例化后的模型对象
-        has_service = any([
-            self.SF_API_KEY and self.SF_BASE_URL,
-            self.AL_BAILIAN_API_KEY and self.AL_BAILIAN_BASE_URL
-        ])
+        验证器：在配置加载完成后自动执行，位置和加载顺序与原来一致。
 
-        if not has_service:
-            raise ValueError("必须配置至少一个 AI 服务 (硅基流动 或 阿里百炼)")
+        逐项检查启动必需的配置：至少一套完整的 AI 服务（API Key + Base URL），
+        以及已配置那一套实际使用的模型名称。缺哪项就报哪项的字段名，
+        不打印字段值，避免密钥进入终端或日志。
+        """
+        problems = missing_configuration_problems(self)
+        if problems:
+            raise ValueError(startup_configuration_error_message(problems))
 
         return self
 

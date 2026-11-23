@@ -13,6 +13,9 @@ from contextlib import asynccontextmanager
 from api.routers import router
 from infrastructure.logging.logger import logger
 from infrastructure.tools.mcp.mcp_manager import mcp_connect, mcp_cleanup
+from config.settings import settings
+from config.startup_check import startup_configuration_summary
+
 
 
 @asynccontextmanager
@@ -65,6 +68,8 @@ def create_fast_api() -> FastAPI:
 
 if __name__ == '__main__':
     print("1.准备启动Web服务器")
+    # 启动前配置检查已在导入 settings 时完成；这里只打印一行脱敏摘要，不打印密钥值。
+    logger.info(startup_configuration_summary(settings))
     try:
         uvicorn.run(app=create_fast_api(), host="127.0.0.1", port=8000)
 

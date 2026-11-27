@@ -73,3 +73,11 @@
 - `npm run dev` 时 Vite 默认 host 是 localhost。在 Node 22 的 Linux 上，对话页和知识库管理页只听 `::1`。`http://127.0.0.1:5173` 和 `http://127.0.0.1:3000` 连接被拒绝，`http://localhost:5173/` 和 `http://localhost:3000/` 返回 200。README 要写终端打印的 localhost。
 - 主服务和知识库服务的 uvicorn 显式绑定 `127.0.0.1` 的 8000 和 8001。这两个地址保持 127.0.0.1，不要改成 localhost。
 - `front/agent_web_ui/proxyTarget.test.mjs` 会读 README，锁住 `localhost:5173`、`localhost:3000`，并拒绝 `127.0.0.1:5173` 和 `127.0.0.1:3000`。
+
+## 2026-11-23 启动前配置检查
+
+- 主服务的启动校验原来只有一句「必须配置至少一个 AI 服务」，缺模型名称、缺 Base URL 都看不出来。现在由 `backend/app/config/startup_check.py` 逐项收集缺的字段名，`config/settings.py` 里的 `model_validator` 保持原位、原加载顺序调用它；报错只写字段名不写值，测试会断言密钥不出现在 stderr 和 stdout。
+- 模型名称只在对应那一套服务配全时才要求：配了硅基流动要 `MAIN_MODEL_NAME`，配了阿里百炼要 `SUB_MODEL_NAME`。不要改成「两个模型名都必须填」，否则「只配硅基流动也能起来」的约定和 `test_only_siliconflow_can_import_app` 会一起失效。
+- 只填了 API Key、漏了 Base URL 的「半套」配置，在另一套完整时不阻断启动（和 README 的说明一致）；一套完整都没有时才逐条列出两种服务缺的字段。要改这个语义，先同步 README 和 `tests/test_openai_client_startup.py`。
+- 这个测试的子进程现在会把 `MAIN_MODEL_NAME`、`SUB_MODEL_NAME` 一起从环境里清掉。不清的话，本机 `.env` 或 shell 里的值会让「缺配置」用例假装通过。
+- 本机跑这套测试需要 `pystun3`（`service_station.py` 里 `import stun`），CI 只做 `compileall`，缺这个依赖在 CI 上看不出来。

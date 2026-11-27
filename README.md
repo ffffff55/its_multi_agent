@@ -19,7 +19,7 @@
 | 2 | `backend/app` | `python api/main.py` | `127.0.0.1:8000` | `AL_BAILIAN_API_KEY`、`AL_BAILIAN_BASE_URL`、`SUB_MODEL_NAME`，以及 `KNOWLEDGE_BASE_URL=http://127.0.0.1:8001` |
 | 3 | `front/agent_web_ui` | `npm run dev` | `http://localhost:5173` | 不用改。页面请求 `/api`，开发服务器代理到本机 8000 |
 
-表里是这一步要能回答问题至少要填的，不是进程能不能起来的全部条件。主服务启动校验要求硅基流动或阿里百炼有一套完整的（API Key + Base URL），并检查这一套实际使用的模型名称；缺哪项就逐条报哪项的字段名，报错里不打印密钥值。不填 `KNOWLEDGE_BASE_URL` 也能起来，只是查知识库会失败。当前调度和两个专家用的是阿里百炼上的 `SUB_MODEL_NAME`。只配硅基流动时，主服务能起来，对话请求会失败。
+表里是这一步要能回答问题至少要填的，不是进程能不能起来的全部条件。主服务启动校验只看硅基流动或阿里百炼有没有一套；不填 `KNOWLEDGE_BASE_URL` 也能起来，只是查知识库会失败。当前调度和两个专家用的是阿里百炼上的 `SUB_MODEL_NAME`。只配硅基流动时，主服务能起来，对话请求会失败。
 
 对话页和知识库管理页打开终端打印的 `http://localhost:5173/`、`http://localhost:3000/`。主服务和知识库服务仍是 `127.0.0.1` 的 8000 和 8001。
 
@@ -42,7 +42,7 @@
 ## 准备
 
 - Python 3 和 Node.js
-- 至少一套大模型账号。硅基流动（`SF_API_KEY` + `SF_BASE_URL`）或阿里百炼（`AL_BAILIAN_API_KEY` + `AL_BAILIAN_BASE_URL`）必须有一套，否则主服务在启动校验时退出。只配其中一套时，进程可以起来。启动失败时会逐条列出缺的字段名（例如 `SF_API_KEY`、`SF_BASE_URL`、`SUB_MODEL_NAME`），不会打印密钥值。
+- 至少一套大模型账号。硅基流动（`SF_API_KEY` + `SF_BASE_URL`）或阿里百炼（`AL_BAILIAN_API_KEY` + `AL_BAILIAN_BASE_URL`）必须有一套，否则主服务在启动校验时退出。只配其中一套时，进程可以起来。
 - 当前主调度和两个专家用的是子模型（环境变量 `SUB_MODEL_NAME`），客户端指向阿里百炼。只配了硅基流动时，对话请求会失败。要真正对话，请配好 `AL_BAILIAN_API_KEY`、`AL_BAILIAN_BASE_URL` 和 `SUB_MODEL_NAME`。
 - 查附近服务站需要 MySQL。只问故障和操作说明时可以先不装。
 - 联网搜索需要通义千问 DashScope；地图和路径需要百度地图 AK。这两项缺失时进程仍会启动，对应工具会失败。
